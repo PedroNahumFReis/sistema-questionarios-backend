@@ -32,6 +32,14 @@ public class AlunoController {
     }
 
     /**
+     * GET /api/alunos — lista todos os alunos (usado no painel do professor para escolher o destinatário).
+     */
+    @GetMapping
+    public ResponseEntity<java.util.List<Aluno>> listar() {
+        return ResponseEntity.ok(repository.findAll());
+    }
+
+    /**
      * GET /api/alunos/{id} — busca um aluno pelo id (também serve de alvo do link "self").
      */
     @GetMapping("/{id}")

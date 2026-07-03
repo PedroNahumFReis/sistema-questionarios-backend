@@ -42,6 +42,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rotas públicas (não exigem login):
                         .requestMatchers(
+                                "/",                   // frontend (página inicial)
+                                "/index.html",
+                                "/responder.html",     // página do aluno responder
+                                "/css/**", "/js/**",   // arquivos estáticos do frontend
+                                "/favicon.ico",
                                 "/api/auth/**",        // login (para conseguir o token)
                                 "/api/professores",    // cadastro de professor (RF01)
                                 "/swagger-ui/**",      // documentação Swagger (RF16)
@@ -50,7 +55,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/error"               // página padrão de erro
                         ).permitAll()
-                        // Aluno responde sem login, usando o token do e-mail (RF11).
+                        // Aluno carrega e responde o questionário sem login, usando o token do e-mail (RF11).
+                        .requestMatchers(HttpMethod.GET, "/api/responder/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/responder/**").permitAll()
                         // Aluno vê as próprias respostas sem login, também pelo token (RF14).
                         .requestMatchers(HttpMethod.GET, "/api/respostas/**").permitAll()

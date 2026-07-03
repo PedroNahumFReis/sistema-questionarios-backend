@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responder Questionário</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="logo">Q</span> Questionários Online</div>
+  </div>
+
+  <div class="container container-narrow">
+    <!-- Estado de carregamento -->
+    <div id="loading" class="card center"><p class="muted">Carregando questionário…</p></div>
+
+    <!-- Erro (token inválido/expirado/usado) -->
+    <div id="erroView" class="card hidden">
+      <div id="erroMsg" class="alert alert-error"></div>
+      <p class="muted">Se você acha que isto é um engano, peça ao professor para reenviar o questionário.</p>
+    </div>
+
+    <!-- Formulário do questionário -->
+    <div id="quizView" class="hidden">
+      <div class="card">
+        <h2 id="quizTitulo"></h2>
+        <p id="quizDescricao" class="subtitle"></p>
+      </div>
+      <div id="perguntas"></div>
+      <div id="quizAlert"></div>
+      <button id="btnEnviarRespostas" class="btn btn-block">Enviar respostas</button>
+      <p class="muted center mt" style="font-size:0.8rem;">Você só pode responder uma vez.</p>
+    </div>
+
+    <!-- Resultado da correção -->
+    <div id="resultView" class="hidden">
+      <div class="card">
+        <div class="result-hero">
+          <div class="muted">Sua nota</div>
+          <div id="rGrade" class="grade"></div>
+        </div>
+        <div class="stat-cards mt">
+          <div class="stat-card"><div id="rAcertos" class="num"></div><div class="lbl">Acertos</div></div>
+          <div class="stat-card"><div id="rErros" class="num"></div><div class="lbl">Erros</div></div>
+          <div class="stat-card"><div id="rPerc" class="num"></div><div class="lbl">Aproveitamento</div></div>
+        </div>
+        <div class="divider"></div>
+        <button id="btnVerRespostas" class="btn btn-ghost btn-block">Ver minhas respostas</button>
+        <div id="respostasDetalhe" class="mt"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/responder.js"></script>
+</body>
+</html>

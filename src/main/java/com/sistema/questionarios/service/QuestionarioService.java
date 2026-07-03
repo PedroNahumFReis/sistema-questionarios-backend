@@ -1,6 +1,7 @@
 package com.sistema.questionarios.service;
 
 import com.sistema.questionarios.dto.EstatisticaDTO;
+import com.sistema.questionarios.dto.QuestionarioResponderDTO;
 import com.sistema.questionarios.dto.RespostaViewDTO;
 import com.sistema.questionarios.dto.ResultadoDTO;
 import com.sistema.questionarios.model.*;
@@ -125,17 +126,17 @@ public class QuestionarioService {
      */
     @Transactional
     public ResultadoDTO corrigirQuestionario(String tokenStr, List<Long> idsAlternativasSelecionadas) {
-        // RF10: o token precisa existir.
+        // RF10: o token precisa existir. IllegalArgumentException vira HTTP 400 com mensagem clara.
         TokenAcesso token = tokenRepository.findByToken(tokenStr)
-                .orElseThrow(() -> new RuntimeException("Token inválido ou não encontrado."));
+                .orElseThrow(() -> new IllegalArgumentException("Token inválido ou não encontrado."));
 
         // RN04: não pode responder duas vezes.
         if (token.getUtilizado()) {
-            throw new RuntimeException("Questionário já foi respondido. (RN04)");
+            throw new IllegalArgumentException("Questionário já foi respondido. (RN04)");
         }
         // RN03: não pode responder após a expiração.
         if (LocalDateTime.now().isAfter(token.getDataExpiracao())) {
-            throw new RuntimeException("O token de acesso expirou. (RN03)");
+            throw new IllegalArgumentException("O token de acesso expirou. (RN03)");
         }
 
         double notaFinal = 0.0;
@@ -175,13 +176,44 @@ public class QuestionarioService {
     }
 
     /**
+     * Entrega o questionário ao aluno para ser respondido (usado pelo frontend do aluno).
+     * Valida o token (existe, não usado, não expirado) e devolve as perguntas SEM a resposta correta.
+     */
+    @Transactional(readOnly = true)
+    public QuestionarioResponderDTO buscarParaResponder(String tokenStr) {
+        TokenAcesso token = tokenRepository.findByToken(tokenStr)
+                .orElseThrow(() -> new IllegalArgumentException("Token inválido ou não encontrado."));
+        if (token.getUtilizado()) {
+            throw new IllegalArgumentException("Este questionário já foi respondido. (RN04)");
+        }
+        if (LocalDateTime.now().isAfter(token.getDataExpiracao())) {
+            throw new IllegalArgumentException("O link de acesso expirou. (RN03)");
+        }
+
+        Questionario q = token.getQuestionario();
+
+        // Converte as entidades para o DTO, omitindo o campo 'correta' de cada alternativa.
+        List<QuestionarioResponderDTO.PerguntaResponder> perguntas = q.getPerguntas().stream()
+                .map(p -> new QuestionarioResponderDTO.PerguntaResponder(
+                        p.getId(),
+                        p.getEnunciado(),
+                        p.getTipo() == null ? null : p.getTipo().name(),
+                        p.getAlternativas().stream()
+                                .map(a -> new QuestionarioResponderDTO.AlternativaResponder(a.getId(), a.getTexto()))
+                                .toList()))
+                .toList();
+
+        return new QuestionarioResponderDTO(q.getId(), q.getTitulo(), q.getDescricao(), perguntas);
+    }
+
+    /**
      * RF14: lista as respostas que um aluno enviou, identificadas pelo token usado.
      * readOnly = true: transação apenas de leitura (uma pequena otimização, não altera nada).
      */
     @Transactional(readOnly = true)
     public List<RespostaViewDTO> listarRespostas(String tokenStr) {
         TokenAcesso token = tokenRepository.findByToken(tokenStr)
-                .orElseThrow(() -> new RuntimeException("Token inválido ou não encontrado."));
+                .orElseThrow(() -> new IllegalArgumentException("Token inválido ou não encontrado."));
 
         // Converte cada RespostaAluno (entidade) em um RespostaViewDTO (só os campos de exibição).
         return respostaRepository.findByToken(token).stream()

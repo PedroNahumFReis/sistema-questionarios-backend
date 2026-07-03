@@ -62,7 +62,21 @@
 5. ~~**Validar RN05**~~ — ✅ FEITO (400 Bad Request quando não há alternativa correta).
 6. ~~**HATEOAS (RF17)**~~ — ✅ FEITO (links em questionário, resultado, aluno, professor).
 7. ~~**Banco (RNF02)**~~ — ✅ FEITO: migrado para MySQL (usuário `root`, schema criado automaticamente), validado em runtime. Senha fica **só via variável de ambiente `DB_PASSWORD`** (padrão no arquivo é o placeholder `changeme`).
-8. **E-mail real (RF09)** — configurar SMTP em `application.properties` (opcional; hoje loga o link).
+8. ~~**Frontend (ponto extra)**~~ — ✅ FEITO: interface web (professor + aluno) servida como estático pelo próprio Spring Boot.
+9. **E-mail real (RF09)** — configurar SMTP em `application.properties` (opcional; hoje loga o link).
+
+## Frontend (ponto extra)
+
+Interface web em HTML/CSS/JavaScript puro, servida pelo backend em `src/main/resources/static`
+(mesma origem, sem CORS). Acesse em **http://localhost:8080** com a aplicação rodando.
+
+- **Painel do professor (`index.html`):** login/cadastro (JWT salvo no navegador), criação de
+  questionário com construtor dinâmico de perguntas/alternativas, cadastro e listagem de alunos,
+  envio (gera link com botão copiar) e estatísticas com barras por pergunta.
+- **Página do aluno (`responder.html?token=...`):** carrega o questionário pelo token (sem revelar a
+  resposta correta), responde (radio/checkbox conforme o tipo), vê a nota e o detalhe das respostas.
+- **Apoio no backend:** endpoint público `GET /api/responder/{token}` (perguntas sem gabarito),
+  `GET /api/questionarios` e `GET /api/alunos` (listagens), e liberação dos estáticos no SecurityConfig.
 
 ### Correções colaterais aplicadas (bugs pré-existentes)
 - `application.properties` com encoding corrompido quebrava o `mvn compile` → reescrito em ASCII.

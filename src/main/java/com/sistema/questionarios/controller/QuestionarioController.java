@@ -48,6 +48,12 @@ public class QuestionarioController {
         return ResponseEntity.ok(toResource(salvo));
     }
 
+    @Operation(summary = "Listar todos os questionários (para o painel do professor)")
+    @GetMapping("/questionarios")
+    public ResponseEntity<java.util.List<Questionario>> listarQuestionarios() {
+        return ResponseEntity.ok(questionarioRepository.findAll());
+    }
+
     @Operation(summary = "Buscar questionário com suporte HATEOAS")
     @GetMapping("/questionarios/{id}")
     public ResponseEntity<EntityModel<Questionario>> buscarQuestionario(@PathVariable Long id) {
@@ -93,6 +99,13 @@ public class QuestionarioController {
                 "mensagem", "Questionário associado ao aluno e e-mail disparado.",
                 "token", tokenGerado,
                 "linkResposta", "/api/responder/" + tokenGerado));
+    }
+
+    @Operation(summary = "Aluno carrega o questionário para responder (perguntas sem a resposta correta)")
+    @GetMapping("/responder/{token}")
+    public ResponseEntity<com.sistema.questionarios.dto.QuestionarioResponderDTO> carregarParaResponder(
+            @PathVariable String token) {
+        return ResponseEntity.ok(questionarioService.buscarParaResponder(token));
     }
 
     @Operation(summary = "Aluno responde o questionário usando o token enviado por e-mail")

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Questionários Online — Professor</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Barra superior -->
+  <div class="topbar">
+    <div class="brand"><span class="logo">Q</span> Questionários Online</div>
+    <button id="btnLogout" class="btn btn-ghost btn-sm hidden">Sair</button>
+  </div>
+
+  <!-- ===================== TELA DE LOGIN ===================== -->
+  <div id="loginView" class="container container-narrow">
+    <div class="card mt">
+      <h2>Entrar como professor</h2>
+      <p class="subtitle">Use o e-mail e a senha cadastrados.</p>
+      <div id="loginAlert"></div>
+      <label>E-mail</label>
+      <input id="loginEmail" type="email" placeholder="ana@x.com" />
+      <label>Senha</label>
+      <input id="loginSenha" type="password" placeholder="••••••" />
+      <button id="btnLogin" class="btn btn-block mt">Entrar</button>
+      <div class="divider"></div>
+      <p class="subtitle center">Não tem conta?</p>
+      <button id="btnShowCadastro" class="btn btn-ghost btn-block">Cadastrar professor</button>
+    </div>
+
+    <!-- Cadastro de professor -->
+    <div id="cadastroCard" class="card hidden">
+      <h2>Cadastrar professor</h2>
+      <div id="cadastroAlert"></div>
+      <label>Nome</label>
+      <input id="cadNome" type="text" placeholder="Ana Souza" />
+      <label>E-mail</label>
+      <input id="cadEmail" type="email" placeholder="ana@x.com" />
+      <label>Senha</label>
+      <input id="cadSenha" type="password" placeholder="••••••" />
+      <button id="btnCadastrar" class="btn btn-block mt">Criar conta</button>
+    </div>
+  </div>
+
+  <!-- ===================== PAINEL DO PROFESSOR ===================== -->
+  <div id="appView" class="container hidden">
+    <div class="tabs">
+      <div class="tab active" data-tab="questionarios">Questionários</div>
+      <div class="tab" data-tab="alunos">Alunos</div>
+      <div class="tab" data-tab="enviar">Enviar</div>
+      <div class="tab" data-tab="estatisticas">Estatísticas</div>
+    </div>
+
+    <!-- Aba: Questionários -->
+    <section id="tab-questionarios">
+      <div class="card">
+        <h2>Novo questionário</h2>
+        <p class="subtitle">Preencha os dados, adicione perguntas e marque a(s) alternativa(s) correta(s).</p>
+        <div id="qAlert"></div>
+        <label>Título</label>
+        <input id="qTitulo" type="text" placeholder="Java Básico" />
+        <div class="row">
+          <div>
+            <label>Descrição</label>
+            <input id="qDescricao" type="text" placeholder="Avaliação inicial" />
+          </div>
+          <div>
+            <label>Validade do link (minutos)</label>
+            <input id="qValidade" type="number" value="60" min="1" />
+          </div>
+        </div>
+
+        <label class="mt">Perguntas</label>
+        <div id="perguntasContainer"></div>
+        <button id="btnAddPergunta" class="btn btn-ghost btn-sm">+ Adicionar pergunta</button>
+
+        <div class="divider"></div>
+        <button id="btnSalvarQuestionario" class="btn">Salvar questionário</button>
+      </div>
+
+      <div class="card">
+        <h2>Questionários criados</h2>
+        <div id="listaQuestionarios"><p class="muted">Carregando…</p></div>
+      </div>
+    </section>
+
+    <!-- Aba: Alunos -->
+    <section id="tab-alunos" class="hidden">
+      <div class="card">
+        <h2>Cadastrar aluno</h2>
+        <div id="aAlert"></div>
+        <label>Nome</label>
+        <input id="aNome" type="text" placeholder="João Silva" />
+        <div class="row">
+          <div><label>E-mail</label><input id="aEmail" type="email" placeholder="joao@x.com" /></div>
+          <div><label>Matrícula</label><input id="aMatricula" type="text" placeholder="2024001" /></div>
+        </div>
+        <button id="btnSalvarAluno" class="btn mt">Cadastrar aluno</button>
+      </div>
+      <div class="card">
+        <h2>Alunos cadastrados</h2>
+        <div id="listaAlunos"><p class="muted">Carregando…</p></div>
+      </div>
+    </section>
+
+    <!-- Aba: Enviar -->
+    <section id="tab-enviar" class="hidden">
+      <div class="card">
+        <h2>Enviar questionário a um aluno</h2>
+        <p class="subtitle">Gera um token temporário e (simula) o envio do link por e-mail.</p>
+        <div id="eAlert"></div>
+        <label>Questionário</label>
+        <select id="eQuestionario"></select>
+        <label>Aluno</label>
+        <select id="eAluno"></select>
+        <button id="btnEnviar" class="btn mt">Gerar link e enviar</button>
+
+        <div id="linkGeradoBox" class="hidden">
+          <div class="divider"></div>
+          <div class="alert alert-success">Link gerado! O aluno acessaria por e-mail — para testar, copie abaixo:</div>
+          <div class="copybox">
+            <input id="linkGerado" type="text" readonly />
+            <button id="btnCopiar" class="btn btn-ghost btn-sm">Copiar</button>
+          </div>
+          <a id="linkAbrir" class="btn btn-ghost btn-sm mt" target="_blank">Abrir página do aluno ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Aba: Estatísticas -->
+    <section id="tab-estatisticas" class="hidden">
+      <div class="card">
+        <h2>Estatísticas do questionário</h2>
+        <div id="sAlert"></div>
+        <label>Questionário</label>
+        <select id="sQuestionario"></select>
+        <button id="btnCarregarStats" class="btn mt">Ver estatísticas</button>
+        <div id="statsResultado" class="mt"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

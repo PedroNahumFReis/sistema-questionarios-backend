@@ -71,6 +71,19 @@ A aplicação sobe em **http://localhost:8080**. Quando ver no console
 
 ---
 
+## Frontend (interface web — ponto extra)
+
+Com a aplicação no ar, abra no navegador:
+
+- **Painel do professor:** http://localhost:8080/ (ou `/index.html`)
+  Faça login/cadastro, crie questionários (com construtor de perguntas), cadastre alunos,
+  envie o questionário (gera um link para copiar) e veja as estatísticas.
+- **Página do aluno:** aberta pelo link gerado no envio — `http://localhost:8080/responder.html?token=SEU_TOKEN`
+  O aluno responde e vê a nota e o detalhe das respostas.
+
+A interface é servida pelo próprio Spring Boot (arquivos em `src/main/resources/static`), então
+não há nada extra para instalar ou subir.
+
 ## Documentação da API (Swagger)
 
 Com a aplicação no ar, acesse:
