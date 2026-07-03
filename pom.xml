@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pom.xml — arquivo de configuração do Maven.
+  O Maven é a ferramenta que baixa as bibliotecas (dependências), compila o projeto e o empacota.
+  Aqui declaramos qual versão do Spring Boot usar, a versão do Java e todas as dependências.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      parent: herda do Spring Boot as versões já testadas de todas as bibliotecas.
+      Por isso a maioria das dependências abaixo não precisa declarar <version> — vem daqui.
+    -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.0</version>
         <relativePath/>
     </parent>
+
+    <!-- Identificação do próprio projeto (grupo, nome do artefato e versão). -->
     <groupId>com.sistema</groupId>
     <artifactId>questionarios</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -26,50 +38,76 @@
         <tag/>
         <url/>
     </scm>
+
     <properties>
+        <!-- Versão do Java usada para compilar (RNF01 exige Java 17+; aqui usamos 21). -->
         <java.version>21</java.version>
     </properties>
 
     <dependencies>
+        <!-- Web: cria as APIs REST (controllers, @RestController) e sobe o servidor Tomcat embutido. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!-- Data JPA: persistência com Hibernate; dá os JpaRepository e o mapeamento objeto-relacional. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
+        <!-- Security: autenticação/autorização; base para proteger endpoints com JWT (RNF04). -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
+        <!-- Mail: envio de e-mails via SMTP (RF09), usado pelo EmailService. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+
+        <!-- HATEOAS: permite adicionar os links de navegação nas respostas (RF17). -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-hateoas</artifactId>
         </dependency>
 
+        <!-- Springdoc/OpenAPI: gera a documentação Swagger UI automaticamente (RF16). -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.2.0</version>
         </dependency>
 
+        <!-- Driver do MySQL (RNF02). scope=runtime: só é necessário ao executar, não ao compilar. -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
+        <!-- H2 (banco em memória) usado APENAS nos testes, para o contexto subir sem MySQL ligado. -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Lombok: gera getters/setters/construtores em tempo de compilação (as anotações @Data, etc.). -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!--
+          JJWT: biblioteca para criar e validar tokens JWT (RF03/RNF04). Dividida em 3 partes:
+          - api: as classes que usamos no código;
+          - impl e jackson: a implementação em si e a conversão JSON, necessárias só em runtime.
+        -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -87,10 +125,24 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- Ferramentas de teste (JUnit, etc.). scope=test: só entram na compilação/execução dos testes. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Utilitários para testar segurança (ex.: simular usuário autenticado). -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Plugin que empacota a aplicação em um JAR executável e permite rodar com 'mvn spring-boot:run'. -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

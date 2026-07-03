@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "Sistema de Questionarios - Backend",
+    "description": "Colecao completa da API de questionarios online (Spring Boot).\n\nComo usar:\n1. Suba a aplicacao (mvnw spring-boot:run) com o MySQL rodando.\n2. Rode as requisicoes na ordem em que aparecem (de cima para baixo).\n3. O login salva o JWT automaticamente na variavel {{jwt}} e o envio salva o token de acesso em {{accessToken}} — nao precisa copiar/colar nada.\n\nVariaveis (aba Variables): baseUrl, jwt, accessToken, questionarioId, alunoId.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "jwt", "value": "", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "questionarioId", "value": "1", "type": "string" },
+    { "key": "alunoId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Cadastrar Professor (RF01)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/professores", "host": [ "{{baseUrl}}" ], "path": [ "api", "professores" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Ana\",\n  \"email\": \"ana@x.com\",\n  \"senha\": \"123\"\n}"
+        },
+        "description": "Cadastra um professor. A senha e criptografada (BCrypt) antes de salvar. Rota publica."
+      }
+    },
+    {
+      "name": "2. Login (RF03) -> salva {{jwt}}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  pm.collectionVariables.set('jwt', json.token);",
+              "  console.log('JWT salvo em {{jwt}}');",
+              "} else {",
+              "  console.log('Login falhou: ' + pm.response.code);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": [ "{{baseUrl}}" ], "path": [ "api", "auth", "login" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"ana@x.com\",\n  \"senha\": \"123\"\n}"
+        },
+        "description": "Valida email+senha e retorna um JWT. O script da aba Tests salva o token na variavel {{jwt}}."
+      }
+    },
+    {
+      "name": "3. Criar Questionario (RF04, RN05) -> salva {{questionarioId}}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  pm.collectionVariables.set('questionarioId', String(json.id));",
+              "  console.log('questionarioId = ' + json.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Java Basico\",\n  \"descricao\": \"Avaliacao inicial\",\n  \"tempoValidadeTokenMinutos\": 60,\n  \"perguntas\": [\n    {\n      \"enunciado\": \"Quanto e 2 + 2?\",\n      \"tipo\": \"UNICA_ESCOLHA\",\n      \"pontuacao\": 5.0,\n      \"alternativas\": [\n        { \"texto\": \"3\", \"correta\": false },\n        { \"texto\": \"4\", \"correta\": true }\n      ]\n    }\n  ]\n}"
+        },
+        "description": "Cria o questionario com perguntas e alternativas. Exige JWT. RN05: cada pergunta precisa de ao menos uma alternativa correta (senao retorna 400)."
+      }
+    },
+    {
+      "name": "4. Buscar Questionario (HATEOAS - RF17)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios/{{questionarioId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios", "{{questionarioId}}" ] },
+        "description": "Retorna o questionario com links HATEOAS (self, perguntas, estatisticas)."
+      }
+    },
+    {
+      "name": "5. Listar Perguntas do Questionario",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios/{{questionarioId}}/perguntas", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios", "{{questionarioId}}", "perguntas" ] }
+      }
+    },
+    {
+      "name": "6. Adicionar Pergunta (RF05, RF06)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios/{{questionarioId}}/perguntas", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios", "{{questionarioId}}", "perguntas" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"enunciado\": \"A JVM executa bytecode?\",\n  \"tipo\": \"VERDADEIRO_FALSO\",\n  \"pontuacao\": 5.0,\n  \"alternativas\": [\n    { \"texto\": \"Verdadeiro\", \"correta\": true },\n    { \"texto\": \"Falso\", \"correta\": false }\n  ]\n}"
+        },
+        "description": "Adiciona uma pergunta a um questionario existente."
+      }
+    },
+    {
+      "name": "6b. Adicionar Pergunta SEM correta -> 400 (RN05)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios/{{questionarioId}}/perguntas", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios", "{{questionarioId}}", "perguntas" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"enunciado\": \"Pergunta invalida\",\n  \"tipo\": \"UNICA_ESCOLHA\",\n  \"pontuacao\": 1.0,\n  \"alternativas\": [\n    { \"texto\": \"a\", \"correta\": false },\n    { \"texto\": \"b\", \"correta\": false }\n  ]\n}"
+        },
+        "description": "Demonstra a RN05: nenhuma alternativa correta -> HTTP 400 com mensagem de erro."
+      }
+    },
+    {
+      "name": "7. Cadastrar Aluno (RF02) -> salva {{alunoId}}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  pm.collectionVariables.set('alunoId', String(json.id));",
+              "  console.log('alunoId = ' + json.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/alunos", "host": [ "{{baseUrl}}" ], "path": [ "api", "alunos" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Joao\",\n  \"email\": \"joao@x.com\",\n  \"matricula\": \"2024001\"\n}"
+        }
+      }
+    },
+    {
+      "name": "8. Enviar Questionario ao Aluno (RF07-09) -> salva {{accessToken}}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  pm.collectionVariables.set('accessToken', json.token);",
+              "  console.log('accessToken (token do aluno) salvo: ' + json.token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios/{{questionarioId}}/enviar/{{alunoId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios", "{{questionarioId}}", "enviar", "{{alunoId}}" ] },
+        "description": "Gera o token de acesso do aluno e dispara o e-mail. A resposta traz o token, que o script salva em {{accessToken}} (util porque o SMTP e ficticio)."
+      }
+    },
+    {
+      "name": "9. Responder Questionario (RF11-13)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/responder/{{accessToken}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "responder", "{{accessToken}}" ] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idsAlternativasSelecionadas\": [2]\n}"
+        },
+        "description": "Aluno responde usando o token do e-mail (rota publica). Retorna nota, acertos, erros, percentual e links HATEOAS. Obs.: ajuste os ids das alternativas conforme os gerados no seu banco."
+      }
+    },
+    {
+      "name": "10. Visualizar Respostas do Aluno (RF14)",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/respostas/{{accessToken}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "respostas", "{{accessToken}}" ] },
+        "description": "Lista as respostas enviadas pelo aluno (identificadas pelo token). Rota publica."
+      }
+    },
+    {
+      "name": "11. Estatisticas do Questionario (RF15)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/questionarios/{{questionarioId}}/estatisticas", "host": [ "{{baseUrl}}" ], "path": [ "api", "questionarios", "{{questionarioId}}", "estatisticas" ] },
+        "description": "Estatisticas gerais e por pergunta, calculadas a partir das respostas persistidas. Exige JWT."
+      }
+    }
+  ]
+}
